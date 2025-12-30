@@ -20,8 +20,8 @@ class ChromaProvider(IVectorStore):
             )
             
             self.embeddings = OllamaEmbeddings(
-                model=settings.OLLAMA_MODEL,
-                base_url="http://ollama:11434"
+                model=settings.OLLAMA_EMBEDDING_MODEL,
+                base_url=settings.OLLAMA_BASE_URL
             )
             
             self.vectorstore = Chroma(
