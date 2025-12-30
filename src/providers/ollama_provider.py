@@ -19,12 +19,12 @@ class OllamaProvider(ILLMProvider):
         base_url: Optional[str] = None,
         model: Optional[str] = None,
         temperature: Optional[float] = None,
-        timeout: int = 180,
+        timeout: Optional[int] = None,
     ):
         self.base_url = base_url or settings.OLLAMA_BASE_URL
         self.model = model or settings.OLLAMA_MODEL
         self.temperature = temperature or settings.LLM_TEMPERATURE
-        self.timeout = timeout  # Timeout in seconds
+        self.timeout = timeout or settings.LLM_TIMEOUT  # Timeout in seconds (default: 600s / 10 min)
 
         self.llm = ChatOllama(
             base_url=self.base_url,

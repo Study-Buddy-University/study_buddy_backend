@@ -28,6 +28,7 @@ class Settings(BaseSettings):
 
     LLM_TEMPERATURE: float = 0.7
     LLM_MAX_TOKENS: int = 2048
+    LLM_TIMEOUT: int = 600
     STREAMING_ENABLED: bool = True
 
     WHISPER_MODEL: str = "base"

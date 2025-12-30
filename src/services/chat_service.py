@@ -304,8 +304,13 @@ class ChatService:
             search_target = extract_url_or_domain(message)
             logger.info(f"🔍 Extracted search target: {search_target}")
             
-            # Yield status message
-            yield f"🔍 Searching for information about {search_target}...\n\n"
+            # Yield structured status message (matches tool loop format)
+            yield {
+                "type": "tool_execution",
+                "tool": "web_search",
+                "status": "executing",
+                "args": {"query": search_target, "num_results": 5}
+            }
             
             # Execute web_search immediately
             try:
@@ -314,6 +319,14 @@ class ChatService:
                 
                 if tool_result.success:
                     logger.info(f"✅ Pre-search complete: {len(tool_result.result)} chars retrieved")
+                    
+                    # Yield structured success message
+                    yield {
+                        "type": "tool_result",
+                        "tool": "web_search",
+                        "status": "success",
+                        "result": tool_result.result[:200]  # Truncate for display
+                    }
                     
                     # Inject search results into document context
                     search_context = f"\n\n=== WEB SEARCH RESULTS FOR {search_target} ===\n{tool_result.result}\n=== END SEARCH RESULTS ===\n"
@@ -340,11 +353,23 @@ class ChatService:
                     )
                 else:
                     logger.warning(f"⚠️ Pre-search failed: {tool_result.error}")
-                    yield f"⚠️ Search failed: {tool_result.error}\n\n"
+                    # Yield structured error message
+                    yield {
+                        "type": "tool_result",
+                        "tool": "web_search",
+                        "status": "error",
+                        "result": tool_result.error
+                    }
                     
             except Exception as e:
                 logger.error(f"❌ Pre-search execution failed: {str(e)}", exc_info=True)
-                yield f"❌ Search error: {str(e)}\n\n"
+                # Yield structured error message
+                yield {
+                    "type": "tool_result",
+                    "tool": "web_search",
+                    "status": "error",
+                    "result": str(e)
+                }
         
         # Build system prompt (tools passed separately via bind_tools)
         current_date = datetime.now().strftime("%B %d, %Y")
