@@ -279,6 +279,9 @@ class ChatService:
         # Track tools used for hallucination detection
         tools_used = []
         
+        # Track if we forced a tool execution (skip tool loop if true)
+        forced_tool_execution = False
+        
         # Get enabled tools for this project (as LangChain tool objects)
         tools = None
         enabled_tool_names = project.tools if project and project.tools else []
@@ -319,6 +322,9 @@ class ChatService:
                 
                 if tool_result.success:
                     logger.info(f"✅ Pre-search complete: {len(tool_result.result)} chars retrieved")
+                    
+                    # Mark that we forced tool execution
+                    forced_tool_execution = True
                     
                     # Yield structured success message
                     yield {
@@ -382,6 +388,18 @@ class ChatService:
         
         # Build initial prompt with system instructions
         prompt = self._build_prompt(message, history, document_context, enhanced_system_prompt)
+        
+        # Skip tool loop if we already forced tool execution (avoids timeout with slow models)
+        if forced_tool_execution:
+            logger.info(f"⚡ Skipping tool loop - already forced web_search execution")
+            logger.info(f"💬 Streaming final response directly")
+            
+            # Stream the final response without tool decision
+            async for chunk in self.llm_provider.generate_stream(prompt, model=model, use_gpu=use_gpu):
+                yield chunk
+            
+            logger.info(f"✅ Response complete (forced tool path)")
+            return
         
         # Tool execution loop
         for iteration in range(max_iterations):
