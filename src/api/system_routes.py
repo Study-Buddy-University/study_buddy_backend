@@ -178,3 +178,58 @@ def _get_nvidia_driver_version() -> str:
     except:
         pass
     return "Unknown"
+
+
+@router.get(
+    "/system/models",
+    response_model=Dict[str, Any],
+    summary="List available Ollama models",
+    description="Returns list of all downloaded Ollama models",
+    tags=["System"],
+)
+async def list_ollama_models(current_user: User = Depends(get_current_user)):
+    """List all available Ollama models."""
+    try:
+        from src.config import settings
+        import httpx
+        
+        # Call Ollama API to list models
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get(f"{settings.OLLAMA_BASE_URL}/api/tags")
+            
+            if response.status_code == 200:
+                data = response.json()
+                models = data.get("models", [])
+                
+                # Format model list
+                model_list = [
+                    {
+                        "name": model.get("name"),
+                        "size": model.get("size", 0),
+                        "modified_at": model.get("modified_at"),
+                        "size_gb": round(model.get("size", 0) / (1024**3), 2)
+                    }
+                    for model in models
+                ]
+                
+                return {
+                    "success": True,
+                    "count": len(model_list),
+                    "models": model_list
+                }
+            else:
+                logger.error(f"Failed to fetch models from Ollama: {response.status_code}")
+                return {
+                    "success": False,
+                    "count": 0,
+                    "models": [],
+                    "error": "Failed to connect to Ollama"
+                }
+    except Exception as e:
+        logger.error(f"Error fetching Ollama models: {e}")
+        return {
+            "success": False,
+            "count": 0,
+            "models": [],
+            "error": str(e)
+        }
