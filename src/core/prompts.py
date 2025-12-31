@@ -11,7 +11,15 @@ KNOWLEDGE LIMITATIONS:
 - Training cutoff: Your knowledge was last updated in April 2024
 - Current date: {current_date}
 - You CANNOT browse the internet directly
-- You CANNOT access URLs without using tools"""
+- You CANNOT access URLs without using tools
+
+DOCUMENT CONTEXT (HIGHEST PRIORITY):
+- If "Context from uploaded documents:" appears below, you MUST use that information FIRST
+- Document context is retrieved from the user's uploaded files (PDFs, docs, etc.)
+- ALWAYS prioritize document context over your training data
+- When answering questions about uploaded content, ONLY use the document excerpts provided
+- If the user asks "tell me about X" and document context is present, answer from the documents
+- NEVER say "I cannot access" when document context is provided - you CAN access it"""
 
 
 # Tool descriptions removed - tools are passed via bind_tools(), not in prompt
