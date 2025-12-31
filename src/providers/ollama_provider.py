@@ -9,6 +9,7 @@ from langchain_core.messages import AIMessage, ToolCall
 from src.config import settings
 from src.core.exceptions import LLMProviderError
 from src.core.interfaces import ILLMProvider
+from src.core.constants import DEFAULT_MAX_TOKENS
 
 logger = logging.getLogger(__name__)
 
@@ -73,6 +74,7 @@ class OllamaProvider(ILLMProvider):
                 model=model if model else self.model,
                 temperature=self.temperature,
                 num_gpu=num_gpu,
+                num_predict=DEFAULT_MAX_TOKENS,
             )
             if model and model != self.model:
                 logger.info(f"🔄 Model override: {model} (default: {self.model})")
@@ -157,6 +159,7 @@ class OllamaProvider(ILLMProvider):
                 model=model if model else self.model,
                 temperature=self.temperature,
                 num_gpu=num_gpu,
+                num_predict=DEFAULT_MAX_TOKENS,
             )
             if model and model != self.model:
                 logger.info(f"🔄 Model override for streaming: {model} (default: {self.model})")

@@ -653,17 +653,17 @@ class ChatService:
             
             # Build context from results
             # Group by filename to show we're using ONE document
-            filenames = set(r.get("metadata", {}).get("filename", "Unknown") for r in results[:3])
+            filenames = set(r.get("metadata", {}).get("filename", "Unknown") for r in results[:5])
             context_parts = [f"Based on the following document: {', '.join(filenames)}"]
             context_parts.append("\nRelevant excerpts:")
             
-            for i, result in enumerate(results[:3], 1):
+            for i, result in enumerate(results[:5], 1):
                 doc_text = result.get("document", "")
                 filename = result.get("metadata", {}).get("filename", "Unknown")
                 score = result.get("score", 0)
                 
                 context_parts.append(f"\n[Excerpt {i} (relevance: {score:.2f})]")
-                context_parts.append(doc_text[:500])
+                context_parts.append(doc_text)
             
             context = "\n".join(context_parts)
             logger.info(f"✅ RAG: Built context with {len(context_parts)-1} chunks")

@@ -58,8 +58,8 @@ Balance between creativity (1.0) and consistency (0.0).
 0.7 provides good reasoning with some variation.
 """
 
-DEFAULT_MAX_TOKENS = 2048
-"""Maximum tokens for LLM response generation"""
+DEFAULT_MAX_TOKENS = 4096
+"""Maximum tokens for LLM response generation - increased for complete responses (resumes, reports)"""
 
 MAX_TOOL_ITERATIONS = 5
 """Maximum tool calling iterations to prevent infinite loops"""

@@ -27,6 +27,7 @@ class ToolRequirement(Enum):
 def detect_url_patterns(message: str) -> bool:
     """
     Detect if message contains any URL or domain patterns.
+    Only triggers on actual domains, not common words ending in TLDs.
     
     Args:
         message: User's query message
@@ -42,10 +43,30 @@ def detect_url_patterns(message: str) -> bool:
     if re.search(r'\bwww\.', message, re.IGNORECASE):
         return True
     
-    # Comprehensive domain patterns
-    domain_pattern = r'\b[a-z0-9-]+\.(com|org|net|io|ai|dev|co|me|info|app|edu|gov|tech|xyz|site|online)\b'
+    # Domain-like patterns: requires at least 2 parts before TLD
+    # This prevents "already" (.ly) or "finally" (.ly) from matching
+    # Matches: github.io, example.com, zapagi.com
+    # Doesn't match: already, finally, really
+    domain_pattern = r'\b[a-z0-9][-a-z0-9]{1,}\.[a-z0-9][-a-z0-9]{0,}\.(com|org|net|io|ai|dev|co|me|info|app|edu|gov|tech|xyz|site|online)\b'
     if re.search(domain_pattern, message, re.IGNORECASE):
         return True
+    
+    # Simple domain.tld but only if it looks like a domain (no spaces before/after dot)
+    # Matches: zapagi.com, github.io
+    # Doesn't match: "already" (has letters before .ly)
+    simple_domain_pattern = r'\b[a-z0-9][-a-z0-9]{2,}\.(com|org|net|io|ai|dev|edu|gov)\b'
+    if re.search(simple_domain_pattern, message, re.IGNORECASE):
+        # Additional check: word before TLD should not be a common English word
+        match = re.search(simple_domain_pattern, message, re.IGNORECASE)
+        if match:
+            word_before_tld = match.group(0).split('.')[0].lower()
+            # Exclude common words that end in valid TLDs
+            common_false_positives = [
+                'already', 'finally', 'really', 'early', 'fairly', 'nearly', 'clearly',
+                'actually', 'especially', 'family', 'barely', 'daily', 'easily'
+            ]
+            if word_before_tld not in common_false_positives:
+                return True
     
     return False
 
